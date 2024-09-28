@@ -1,0 +1,50 @@
+{
+  "item.farmersrespite.yellow_tea_leaves": "Oolong Tea Leaves",
+  "item.farmersrespite.yellow_tea": "Oolong Tea",
+  "block.farmersrespite.yellow_tea_leaves_sack": "Oolong Tea Leaves Sack",
+  "fluid_type.farmersrespite.yellow_tea_type": "Oolong Tea",
+
+  "item.farmersrespite.long_apple_cider": "Apple Cider (With Milk)",
+  "item.farmersrespite.long_black_tea": "Black Tea (With Milk)",
+  "item.farmersrespite.long_coffee": "Coffee (With Milk)",
+  "item.farmersrespite.long_dandelion_tea": "Dandelion Tea (With Milk)",
+  "item.farmersrespite.long_gamblers_tea": "Gambler's Tea (With Milk)",
+  "item.farmersrespite.long_green_tea": "Green Tea (With Milk)",
+  "item.farmersrespite.long_purulent_tea": "Purulent Tea (With Milk)",
+  "item.farmersrespite.long_rose_hip_tea": "Rose Hip Tea (With Milk)",
+  "item.farmersrespite.long_yellow_tea": "Oolong Tea (With Milk)",
+
+  "fluid_type.farmersrespite.long_apple_cider_type": "Apple Cider (With Milk)",
+  "fluid_type.farmersrespite.long_black_tea_type": "Black Tea (With Milk)",
+  "fluid_type.farmersrespite.long_coffee_type": "Coffee (With Milk)",
+  "fluid_type.farmersrespite.long_dandelion_tea_type": "Dandelion Tea (With Milk)",
+  "fluid_type.farmersrespite.long_gamblers_tea_type": "Gambler's Tea (With Milk)",
+  "fluid_type.farmersrespite.long_green_tea_type": "Green Tea (With Milk)",
+  "fluid_type.farmersrespite.long_purulent_tea_type": "Purulent Tea (With Milk)",
+  "fluid_type.farmersrespite.long_rose_hip_tea_type": "Rose Hip Tea (With Milk)",
+  "fluid_type.farmersrespite.long_yellow_tea_type": "Oolong Tea (With Milk)",
+
+
+  "item.farmersrespite.strong_apple_cider": "Apple Cider (Sweetened)",
+  "item.farmersrespite.strong_black_tea": "Black Tea (Sweetened)",
+  "item.farmersrespite.strong_coffee": "Coffee (Sweetened)",
+  "item.farmersrespite.strong_gamblers_tea": "Gambler's Tea (Sweetened)",
+  "item.farmersrespite.strong_green_tea": "Green Tea (Sweetened)",
+  "item.farmersrespite.strong_hot_cocoa": "Hot Cocoa (Sweetened)",
+  "item.farmersrespite.strong_melon_juice": "Melon Juice (Sweetened)",
+  "item.farmersrespite.strong_purulent_tea": "Purulent Tea (Sweetened)",
+  "item.farmersrespite.strong_rose_hip_tea": "Rose Hip Tea (Sweetened)",
+  "item.farmersrespite.strong_yellow_tea": "Oolong Tea (Sweetened)",
+
+  "fluid_type.farmersrespite.strong_apple_cider_type": "Apple Cider (Sweetened)",
+  "fluid_type.farmersrespite.strong_black_tea_type": "Black Tea (Sweetened)",
+  "fluid_type.farmersrespite.strong_coffee_type": "Coffee (Sweetened)",
+  "fluid_type.farmersrespite.strong_gamblers_tea_type": "Gambler's Tea (Sweetened)",
+  "fluid_type.farmersrespite.strong_green_tea_type": "Green Tea (Sweetened)",
+  "fluid_type.farmersrespite.strong_hot_cocoa_type": "Hot Cocoa (Sweetened)",
+  "fluid_type.farmersrespite.strong_melon_juice_type": "Melon Juice (Sweetened)",
+  "fluid_type.farmersrespite.strong_purulent_tea_type": "Purulent Tea (Sweetened)",
+  "fluid_type.farmersrespite.strong_rose_hip_tea_type": "Rose Hip Tea (Sweetened)",
+  "fluid_type.farmersrespite.strong_yellow_tea_type": "Oolong Tea (Sweetened)"
+
+}
