@@ -1,0 +1,60 @@
+{
+  "name": {
+    "text": "Ice Machine"
+  },
+  "tooltips": "Takes water and makes ice.",
+  "appearance": {
+    "custommachinery:block": "cyclic:solidifier",
+    "item": "cyclic:solidifier"
+  },
+  "components": [
+    {
+      "type": "custommachinery:fluid",
+      "mode": "input",
+      "id": "input",
+      "capacity": 10000
+    },
+    {
+      "type": "custommachinery:item",
+      "id": "output",
+      "mode": "output"
+    }
+  ],
+  "gui": [
+    {
+      "type": "custommachinery:texture",
+      "texture": "custommachinery:textures/gui/base_background.png",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "type": "custommachinery:text",
+      "text": "Ice Machine",
+      "x": 95,
+      "y": 10
+    },
+    {
+      "type": "custommachinery:player_inventory",
+      "x": 40,
+      "y": 92
+    },
+    {
+      "type": "custommachinery:fluid",
+      "id": "input",
+      "x": 40,
+      "y": 30,
+      "height": 55
+    },
+    {
+      "type": "custommachinery:slot",
+      "id": "output",
+      "x": 154,
+      "y": 30
+    },
+    {
+      "type": "custommachinery:progress",
+      "x": 108,
+      "y": 58
+    }
+  ]
+}
