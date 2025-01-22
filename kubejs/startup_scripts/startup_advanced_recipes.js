@@ -10,44 +10,54 @@ global.betterRecipes = [
   // [id, [ingredients array], incomplete item, is a sandwich?]
   //       --> bun/bowl, ...various ingredients, sauce
 
+  // For sequenced assemblies, the combination of the first and second ingredient will determine the incomplete type. As such, these must be a unique pair!
+
   // Burgers & Sandwiches
-  ['farmersdelight:hamburger', ['some_assembly_required:burger_bun', '#forge:cooked_beef', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion', 'kubejs:mayonnaise_bottle'], 'create_central_kitchen:incomplete_hamburger', true],
+  ['farmersdelight:hamburger', ['some_assembly_required:burger_bun', '#forge:cooked_beef', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion', 'culturaldelights:cut_pickle', 'kubejs:mayonnaise_bottle'], 'create_central_kitchen:incomplete_hamburger', true],
   ['collectorsreap:portobello_burger', ['some_assembly_required:burger_bun', 'collectorsreap:baked_portobello_cap', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion', 'kubejs:mayonnaise_bottle'], false, true],
   ['culturaldelights:eggplant_burger', ['some_assembly_required:burger_bun', 'culturaldelights:cut_eggplant', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion', 'kubejs:mayonnaise_bottle'], false, true],
-  ['farmersdelight:bacon_sandwich', ['some_assembly_required:toasted_bread_slice', '#forge:cooked_bacon', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'kubejs:mayonnaise_bottle'], 'create_central_kitchen:incomplete_bacon_sandwich', true],
+  ['farmersdelight:bacon_sandwich', ['2x some_assembly_required:toasted_bread_slice', '#forge:cooked_bacon', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'kubejs:mayonnaise_bottle'], 'create_central_kitchen:incomplete_bacon_sandwich', true],
   ['farmersdelight:chicken_sandwich', ['some_assembly_required:burger_bun', '#forge:cooked_chicken', 'culturaldelights:cut_pickle', 'kubejs:spicy_mayo_bottle'], 'create_central_kitchen:incomplete_chicken_sandwich', true],
   ['farmersdelight:egg_sandwich', ['some_assembly_required:burger_bun', '#forge:eggs', 'kubejs:chile_paste_bottle'], 'create_central_kitchen:incomplete_egg_sandwich', true],
-  ['culturaldelights:mutton_sandwich', ['some_assembly_required:toasted_bread_slice', '#forge:cooked_mutton', '#forge:eggs', 'some_assembly_required:chopped_beetroot', 'kubejs:spicy_mayo_bottle'], false, true],
+  ['culturaldelights:mutton_sandwich', ['2x some_assembly_required:toasted_bread_slice', '#forge:cooked_mutton', '#forge:eggs', 'some_assembly_required:chopped_beetroot', 'kubejs:spicy_mayo_bottle'], false, true],
+  ['kubejs:black_bean_burger', ['some_assembly_required:burger_bun', 'kubejs:black_bean_patty', 'farmersdelight:cabbage_leaf', 'some_assembly_required:chopped_beetroot'], false, true],
+  ['kubejs:pink_pony_club', ['2x some_assembly_required:toasted_bread_slice', 'kubejs:black_bean_patty', 'vegandelight:smoked_tofu_slices', 'some_assembly_required:toasted_bread_slice', 'culturaldelights:cut_avocado', 'kubejs:spicy_mayo_bottle'], false, true],
 
   // Big Meals
-  ['farmersdelight:steak_and_potatoes', ['minecraft:bowl', '#forge:cooked_beef', 'minecraft:baked_potato', 'some_assembly_required:sliced_onion']],
+  ['farmersdelight:steak_and_potatoes', ['minecraft:bowl', '#forge:cooked_steak', 'minecraft:baked_potato', 'some_assembly_required:sliced_onion']],
   ['farmersdelight:roasted_mutton_chops', ['minecraft:bowl', '#forge:cooked_mutton', 'minecraft:baked_potato', 'some_assembly_required:chopped_carrot']],
   ['farmersdelight:grilled_salmon', ['minecraft:bowl', '#forge:cooked_fishes/salmon', 'minecraft:sweet_berries', 'farmersdelight:cabbage_leaf', 'some_assembly_required:sliced_onion']],
-  ['farmersdelight:barbecue_stick', ['minecraft:bowl', 'minecraft:stick', '#forge:cooked_chicken', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion']],
+  ['farmersdelight:barbecue_stick', ['minecraft:stick', '#forge:cooked_chicken', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion']],
   ['culturaldelights:avocado_toast', ['some_assembly_required:toasted_bread_slice', 'culturaldelights:cut_avocado'], 'create_central_kitchen:incomplete_chicken_sandwich'],
+  ['farmersdelight:vegetable_noodles', ['minecraft:bowl', 'kubejs:cooked_pasta', 'some_assembly_required:chopped_carrot', '#forge:mushrooms', '2x #forge:cut_vegetables']],
 
   // Tacos & Wraps
   ['culturaldelights:chicken_taco', ['culturaldelights:tortilla', '#forge:cooked_chicken', 'kubejs:chile_powder', 'farmersdelight:cabbage_leaf', 'some_assembly_required:sliced_onion', 'kubejs:salsa']],
   ['culturaldelights:fish_taco', ['culturaldelights:tortilla', '#forge:cooked_fishes', 'kubejs:chile_powder', 'culturaldelights:cut_avocado', 'some_assembly_required:sliced_onion', 'kubejs:salsa' ]],
   ['culturaldelights:beef_burrito', ['culturaldelights:tortilla', '#forge:cooked_beef', 'kubejs:chile_powder', 'culturaldelights:cut_avocado', 'some_assembly_required:sliced_onion', 'kubejs:salsa']],
   ['farmersdelight:mutton_wrap', ['culturaldelights:tortilla', '#forge:cooked_mutton', 'farmersdelight:cabbage_leaf', 'some_assembly_required:sliced_onion', 'kubejs:spicy_mayo_bottle'], 'create_central_kitchen:incomplete_mutton_wrap'],
+  ['culturaldelights:pork_wrap', ['culturaldelights:tortilla', '#forge:cooked_pork', 'some_assembly_required:apple_slices', 'farmersdelight:cabbage_leaf', 'kubejs:spicy_mayo_bottle']],
   ['collectorsreap:portobello_wrap', ['culturaldelights:tortilla', 'collectorsreap:baked_portobello_cap', 'farmersdelight:cabbage_leaf', 'some_assembly_required:sliced_onion', 'culturaldelights:cut_avocado', 'kubejs:spicy_mayo_bottle']],
   ['kubejs:bean_burrito', ['culturaldelights:tortilla', 'kubejs:black_beans_seed', 'kubejs:chile_powder', 'some_assembly_required:sliced_onion', 'kubejs:salsa']],
-  ['kubejs:breakfast_burrito', ['culturaldelights:tortilla', 'kubejs:black_beans_seed', '#forge:eggs', 'kubejs:chile_powder', 'kubejs:cut_green_pepper', 'kubejs:seasoned_potatoes', 'kubejs:salsa']],
+  ['kubejs:breakfast_burrito', ['culturaldelights:tortilla', '#forge:eggs', 'kubejs:black_beans_seed', 'kubejs:chile_powder', 'kubejs:cut_green_pepper', 'kubejs:seasoned_potatoes', 'kubejs:salsa']],
+  ['kubejs:nachos', ['culturaldelights:tortilla_chips', 'kubejs:black_beans_seed', 'some_assembly_required:sliced_onion', 'culturaldelights:cut_avocado', 'kubejs:salsa']],
+  ['farmersdelight:cabbage_rolls', ['farmersdelight:cabbage_leaf', 'kubejs:cooked_pasta', 'some_assembly_required:chopped_carrot', 'culturaldelights:cut_avocado', 'kubejs:soy_sauce_bottle']],
 
   // Salads
-  ['farmersdelight:mixed_salad', ['minecraft:bowl', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion', '#forge:vinegar_bottle']],
-  ['collectorsreap:deluxe_salad', ['minecraft:bowl', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'culturaldelights:cut_avocado', 'collectorsreap:pomegranate_seeds', '#forge:apple_slices', '#forge:vinegar_bottle']],
-  ['culturaldelights:hearty_salad', ['minecraft:bowl', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'culturaldelights:cut_avocado', 'culturaldelights:cut_cucumber', '#forge:vinegar_bottle']],
+  ['farmersdelight:mixed_salad', ['minecraft:bowl', 'farmersdelight:cabbage_leaf', 'some_assembly_required:chopped_carrot', 'some_assembly_required:chopped_beetroot']],
+  ['collectorsreap:deluxe_salad', ['minecraft:bowl', 'collectorsreap:pomegranate_seeds', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'culturaldelights:cut_avocado', '#forge:apple_slices', '#forge:vinegar_bottle']],
+  ['culturaldelights:hearty_salad', ['minecraft:bowl', 'culturaldelights:cut_avocado', 'farmersdelight:cabbage_leaf', 'some_assembly_required:tomato_slices', 'culturaldelights:cut_cucumber', '#forge:vinegar_bottle']],
+  ['farmersdelight:fruit_salad', ['minecraft:bowl', 'some_assembly_required:apple_slices', 'minecraft:melon_slice', '3x #forge:berries', 'farmersdelight:pumpkin_slice']],
+  ['collectorsreap:pomegranate_bean_salad', ['minecraft:bowl', 'collectorsreap:pomegranate_slice', 'neapolitan:roasted_adzuki_beans', 'some_assembly_required:tomato_slices', 'some_assembly_required:sliced_onion']],
 
   // Sushi
   ['vegandelight:tofish_roll', ['kubejs:sushi_rice', 'vegandelight:tofish', 'minecraft:dried_kelp']],
   ['vegandelight:smoked_tofish_roll', ['kubejs:sushi_rice', 'vegandelight:smoked_tofish', 'minecraft:dried_kelp']],
   ['farmersdelight:salmon_roll', ['kubejs:sushi_rice', 'farmersdelight:salmon_slice', 'minecraft:dried_kelp']],
   ['farmersdelight:cod_roll', ['kubejs:sushi_rice', 'farmersdelight:cod_slice', 'minecraft:dried_kelp']],
-  ['farmersdelight:kelp_roll', ['minecraft:dried_kelp', 'kubejs:sushi_rice', 'some_assembly_required:chopped_carrot']],
-  ['culturaldelights:midori_roll', ['minecraft:dried_kelp', 'kubejs:sushi_rice', 'culturaldelights:cut_cucumber', 'culturaldelights:cut_avocado']],
-  ['culturaldelights:chicken_roll', ['minecraft:dried_kelp', 'kubejs:sushi_rice', '#forge:cooked_chicken']],
+  ['farmersdelight:kelp_roll', ['minecraft:dried_kelp', 'some_assembly_required:chopped_carrot', 'kubejs:sushi_rice']],
+  ['culturaldelights:midori_roll', ['minecraft:dried_kelp', 'culturaldelights:cut_avocado', 'culturaldelights:cut_cucumber', 'kubejs:sushi_rice']],
+  ['culturaldelights:chicken_roll', ['minecraft:dried_kelp', '#forge:cooked_chicken', 'kubejs:sushi_rice']]
 ]
 
 StartupEvents.registry('item', event => {
@@ -59,15 +69,6 @@ StartupEvents.registry('item', event => {
     }
   }
 })
-
-
-/***
- * Neapolitan Recipe Fix Helpers
- **/
-StartupEvents.registry('item', event => {
-  createIncompleteItem(event, 'neapolitan:neapolitan_ice_cream', 'neapolitan:item/vanilla_ice_cream')
-})
-
 
 /***
  * Cake Recipes

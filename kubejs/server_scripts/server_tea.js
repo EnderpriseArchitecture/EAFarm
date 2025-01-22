@@ -79,7 +79,7 @@ ServerEvents.recipes(e => {
     "farmersrespite:purulent_tea": ["minecraft:fermented_spider_eye", "minecraft:nether_wart"],
     "farmersrespite:gamblers_tea": ["minecraft:glow_berries", "farmersrespite:coffee_berries"],
     "farmersrespite:apple_cider": ["minecraft:apple", "minecraft:sugar"],
-    "farmersrespite:melon_juice": ["minecraft:melon_slice", "minecraft:sugar"]
+    // "farmersrespite:melon_juice": ["minecraft:melon_slice", "minecraft:sugar"]
   }
 
   for(const key in basic_teas) {
@@ -241,7 +241,7 @@ ServerEvents.recipes(e => {
     "gamblers_tea",
     "green_tea",
     "hot_cocoa",
-    "melon_juice",
+    // "melon_juice",
     "purulent_tea",
     "rose_hip_tea",
     "yellow_tea"

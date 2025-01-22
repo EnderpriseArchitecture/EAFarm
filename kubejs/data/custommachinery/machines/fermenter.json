@@ -5,7 +5,9 @@
   "tooltips": "Used to ferment a variety of foods.",
   "appearance": {
     "custommachinery:block": "minecraft:barrel",
-    "item": "minecraft:barrel"
+    "item": "minecraft:barrel",
+    "requires_tool": false,
+    "hardness": 0.5
   },
   "components": [
     {

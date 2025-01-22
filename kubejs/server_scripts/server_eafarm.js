@@ -21,7 +21,6 @@
    * Add fried recipes with seed oil
          * Blooming Oddion
          + Blooming Onion
-         + French Fries
    * Fix sweet roll
 */
 
@@ -53,6 +52,8 @@ ServerEvents.tags('item', event => {
   event.add('forge:baking_eggs', 'minecraft:egg')
   event.add('forge:baking_eggs', 'vegandelight:applesauce')
 
+  event.add('forge:cooked_eggs', 'vegandelight:silken_tofu')
+
   event.add('forge:cooked_bacon', 'vegandelight:cooked_smoked_tofu_slices')
 
   event.add('forge:vinegar_bottle', 'kubejs:rice_vinegar_bottle')
@@ -62,6 +63,27 @@ ServerEvents.tags('item', event => {
   event.add('forge:cut_vegetables', 'some_assembly_required:chopped_carrot')
   event.add('forge:cut_vegetables', 'some_assembly_required:sliced_onion')
   event.add('forge:cut_vegetables', 'some_assembly_required:tomato_slices')
+  event.add('forge:cut_vegetables', 'kubejs:cut_green_pepper')
+
+  event.add('forge:stew_vegetables', 'some_assembly_required:chopped_carrot')
+  event.add('forge:stew_vegetables', 'some_assembly_required:cut_potato')
+  event.add('forge:stew_vegetables', 'some_assembly_required:sliced_onion')
+
+  event.add('forge:cut_chicken', 'farmersdelight:chicken_cuts')
+  event.add('forge:cut_chicken', 'vegandelight:tofu_slices')
+
+  event.add('forge:cod_slices', 'farmersdelight:cod_slice')
+  event.add('forge:cod_slices', 'vegandelight:tofish')
+
+  event.remove('forge:seeds', 'kubejs:black_beans_seed')
+  event.add('forge:raw_beef', 'kubejs:uncooked_black_bean_patty')
+  event.add('forge:cooked_beef', 'kubejs:black_bean_patty')
+
+  // Steak is not just beef, and vice versa
+  // From now on, cooked beef is actually hamburger (and black bean patties and minced tofu)
+  event.remove('forge:cooked_beef', 'minecraft:cooked_beef')
+  event.add('forge:cooked_steak', 'minecraft:cooked_beef')
+  event.add('forge:cooked_steak', 'vegandelight:tofu')
 })
 
 ServerEvents.tags('fluid', event => {
@@ -70,6 +92,7 @@ ServerEvents.tags('fluid', event => {
 })
 
 ServerEvents.recipes(event => {
+  let waterBottle = Item.of('minecraft:potion', '{Potion: "minecraft:water"}').strongNBT()
 
   /***
    * Modify coin recipes so we can have an economy
@@ -90,7 +113,7 @@ ServerEvents.recipes(event => {
   event.remove({ 'output': 'createdeco:netherite_coinstack' })
 
   // Zinc -> Copper -> Iron -> Brass -> Industrial Iron -> Gold -> Netherite
-  let coin_economy = [
+  global.coin_economy = [
     'zinc_coin',
     'copper_coin',
     'iron_coin',
@@ -100,19 +123,39 @@ ServerEvents.recipes(event => {
     'netherite_coin'
   ]
 
+  function compacted(event, output, input) {
+    let id = output.replace(':', '_')
+    event.shaped(
+      Item.of(output),
+      [
+        'AA ',
+        'AA', // arg 2: the shape (array of strings)
+        '   '
+      ],
+      {
+        'A': input,
+      }
+    ).id('compacted_' + id + '_manual_only')
+  }
+
   // 8 x smaller coin -> 1 smaller coin stack; 8 x smaller coin stack -> 1 bigger coin
   // The 64 x smaller coin -> 1 bigger coin recipe only appears to work in the mixer for some reason.
   // Must be a shortcoming in Minecraft itself? Is there a mod to fix this, to use stacks as inputs?
-  for(let i = 0; i < coin_economy.length - 1; i++) {
-    let smaller = coin_economy[i]
-    let bigger = coin_economy[i + 1]
-    event.shapeless('64x createdeco:' + smaller, ['createdeco:' + bigger])
-    event.shapeless('createdeco:' + bigger, [Item.of('createdeco:' + smaller, 64)])
-    event.shapeless('createdeco:' + smaller + 'stack', [Item.of('createdeco:' + smaller, 8)])
-    event.shapeless('8x createdeco:' + smaller, [Item.of('createdeco:' + smaller + 'stack', 1)])
-    event.shapeless('createdeco:' + bigger, [Item.of('createdeco:' + smaller + 'stack', 8)])
-  }
+  for(let i = 0; i < global.coin_economy.length - 1; i++) {
+    let smaller = 'createdeco:' + global.coin_economy[i]
+    let bigger  = 'createdeco:' + global.coin_economy[i + 1]
 
+    event.shapeless('16x ' + smaller, [bigger])
+    event.shapeless(bigger, [Item.of(smaller, 16)])
+
+    event.shapeless(smaller + 'stack', [Item.of(smaller, 4)])
+    event.shapeless('4x ' + smaller, [Item.of(smaller + 'stack', 1)])
+    event.shapeless(bigger, [Item.of(smaller + 'stack', 4)])
+
+    compacted(event, smaller + 'stack', smaller)
+    compacted(event, bigger, smaller + 'stack')
+
+  }
 
   /***
    * Better wheat recipes
@@ -177,7 +220,26 @@ ServerEvents.recipes(event => {
     'create:wheat_flour'
   )
 
-  event.remove({'output': 'farmersdelight:raw_pasta', 'input': 'minecraft:wheat'})
+  event.remove({'output': 'farmersdelight:raw_pasta'})
+  event.custom({
+    'type': 'createaddition:rolling',
+    'input': {'item': 'create:dough'},
+    'result': {'item': 'kubejs:dough_sheet'}
+  })
+  event.custom({
+    'type': 'createaddition:rolling',
+    'input': {'item': 'kubejs:dough_sheet'},
+    'result': {'item': 'farmersdelight:raw_pasta'}
+  })
+
+  event.recipes.create.mixing(
+    'kubejs:cooked_pasta',
+    ['farmersdelight:raw_pasta', {'fluid': 'minecraft:water', 'amount': 250}]
+  ).heated()
+
+  event.remove({'output': 'some_assembly_required:burger_bun'})
+  event.shapeless('kubejs:uncooked_burger_bun', ['create:dough', '#forge:seeds'])
+  event.smelting('some_assembly_required:burger_bun', 'kubejs:uncooked_burger_bun')
 
   // Better corn dough receipe
 
@@ -199,19 +261,20 @@ ServerEvents.recipes(event => {
     ]
   })
 
+  event.remove({'output': 'culturaldelights:tortilla'})
+  event.custom({
+    'type': 'createaddition:rolling',
+    'input': {'item': 'culturaldelights:corn_dough'},
+    'result': {'item': 'kubejs:raw_tortilla'}
+  })
+
+  event.smelting('culturaldelights:tortilla', 'kubejs:raw_tortilla')
 
   event.replaceInput(
     { input: 'minecraft:wheat', output: 'quarkdelight:bucket_of_sweet_gelatine' },
     'minecraft:wheat',
     'create:wheat_flour'
   )
-
-  // Replace some recipes to make more sense.
-  event.remove({
-    'input': 'minecraft:wheat',
-    'output': 'some_assembly_required:burger_bun'
-  })
-  event.shapeless('some_assembly_required:burger_bun', ['#forge:dough', '#forge:seeds'])
 
   // We have too many dough recipes.
   event.remove({ type: 'create:mixing', output: 'create:dough' })
@@ -233,10 +296,73 @@ ServerEvents.recipes(event => {
 
   event.remove({ output: 'farmersdelight:wheat_dough' })
 
+  event.remove({ 'output': 'minecraft:beetroot_soup'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'container': {'item': 'bowl'},
+    'ingredients': [{'item': 'some_assembly_required:chopped_beetroot'}, waterBottle],
+    'result': {'item': 'minecraft:beetroot_soup'}
+  })
+  event.recipes.create.mixing('minecraft:beetroot_soup', [{'item': 'some_assembly_required:chopped_beetroot'}, {'fluid': 'minecraft:water', 'amount': 250}, 'minecraft:bowl']).heated()
+
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'container': {'item': 'bowl'},
+    'ingredients': [{'item': 'kubejs:black_beans_seed'}, waterBottle],
+    'result': {'item': 'kubejs:black_bean_soup'}
+  })
+  event.recipes.create.mixing('kubejs:black_bean_soup', [{'item': 'kubejs:black_beans_seed'}, {'fluid': 'minecraft:water', 'amount': 250}, 'minecraft:bowl']).heated()
+
+  event.remove({'id': 'vegandelight:cooking/applesauce'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'container': {'item': 'bowl'},
+    'ingredients': [{'item': 'some_assembly_required:apple_slices'}, {'item': 'minecraft:sugar'}, waterBottle],
+    'result': {'item': 'vegandelight:applesauce'}
+  })
+  // event.replaceInput({'id': 'vegandelight:cooking/applesauce'}, 'minecraft:water_bucket', waterBottle)
+
+  event.shapeless('kubejs:mashed_potatoes', ['minecraft:bowl', 'kubejs:mashed_potatoes_bottle'])
+  event.shapeless('4x kubejs:mashed_potatoes', ['4x minecraft:bowl', 'kubejs:mashed_potatoes_bucket'])
+  event.recipes.create.filling('kubejs:mashed_potatoes', ['minecraft:bowl', Fluid.of('kubejs:mashed_potatoes', 250)])
+
+  // Make sure you can get seeds from the fruits of plants
+
+  event.shapeless('4x neapolitan:strawberry_pips', ['neapolitan:strawberries'])
+  event.shapeless('4x neapolitan:mint_sprout', ['neapolitan:mint_leaves'])
+  event.shapeless('4x culturaldelights:cucumber_seeds', ['culturaldelights:cucumber'])
+  event.shapeless('2x culturaldelights:cucumber_seeds', ['culturaldelights:cut_cucumber'])
+  event.shapeless('4x farmersdelight:cabbage_seeds', ['farmersdelight:cabbage'])
+  event.remove({'type': 'minecraft:crafting_shapeless', 'output': 'farmersdelight:tomato_seeds'})
+  event.shapeless('4x farmersdelight:tomato_seeds', ['farmersdelight:tomato'])
+
+
   // Fix Biomass
   event.remove({'output': 'createaddition:biomass'})
+  event.remove({'output': Fluid.of('createaddition:bioethanol')})
+  event.recipes.create.compacting('createaddition:biomass', ['#createaddition:plants']).heated()
+  event.recipes.create.mixing(Fluid.of('createaddition:bioethanol', 250), ['createaddition:biomass', Fluid.of('createaddition:seed_oil', 125)]).heated()
 
   // Add a better rice recipe
+  event.remove({'output': 'farmersdelight:cooked_rice'})
+
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    // 'container': {'item': 'bowl'},
+    'ingredients': [
+      {'item': 'farmersdelight:rice'},
+      waterBottle
+    ],
+    'result': {'item': 'farmersdelight:cooked_rice'}
+  })
   event.recipes.create.mixing('farmersdelight:cooked_rice',
     [
       {fluid: 'minecraft:water', amount:250},
@@ -263,6 +389,8 @@ ServerEvents.recipes(event => {
 
       if(ingredientName.match(/honey/) || ingredientName.match('kelp')) continue;
 
+      if(ingredientName.match(/chocolate/)) ingredientName = 'create:bar_of_chocolate';
+
       inputs.push({'item': ingredientName});
     }
 
@@ -274,9 +402,45 @@ ServerEvents.recipes(event => {
       'cookingtime': 200,
       'experience': 1,
       'ingredients': inputs,
-      'result': {item: output.id, count: 1}
+      'result': {item: output.id}
     })
+  })
 
+  // Missing gummy recipes
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'minecraft:slime_ball'},
+      {'item': 'minecraft:sugar'},
+      {'item': 'farmersdelight:pumpkin_slice'}
+    ],
+    'result': {item: 'collectorsreap:pumpkin_gummy'}
+  })
+
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'minecraft:slime_ball'},
+      {'item': 'minecraft:sugar'},
+      {'item': 'minecraft:sweet_berries'}
+    ],
+    'result': {item: 'collectorsreap:sweet_berry_gummy'}
+  })
+
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'minecraft:slime_ball'},
+      {'item': 'minecraft:sugar'},
+      {'item': 'some_assembly_required:chopped_beetroot'}
+    ],
+    'result': {item: 'collectorsreap:beetroot_gummy'}
   })
 
   // Fix vegan recipes that use farmersdelight:cooking. These automatically create:mixer recipes that are wrong
@@ -300,6 +464,231 @@ ServerEvents.recipes(event => {
     '#forge:honey'
   )
 
+  /***
+   * Misc cooking recipes.
+   **/
+
+  event.remove({'output': 'farmersdelight:roast_chicken'})
+  event.shapeless('kubejs:uncooked_roast_chicken', ['#forge:raw_chicken', 'some_assembly_required:sliced_onion', 'kubejs:cut_potato', 'some_assembly_required:chopped_carrot'])
+  event.smelting('farmersdelight:roast_chicken', 'kubejs:uncooked_roast_chicken')
+
+  event.recipes.create.filling('kubejs:uncooked_dumplings', [Fluid.of('kubejs:dumpling_filling', 500), '#forge:dough'])
+  event.remove({ 'output': 'farmersdelight:dumplings' }) // This doesn't remove the mixing recipe and I can't figure out why.
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [{'item': 'kubejs:uncooked_dumplings'}],
+    'result': {'item': 'farmersdelight:dumplings'}
+  })
+
+  // This doesn't work, I don't know why.
+  // event.replaceInput({'output': 'culturaldelights:spicy_curry'}, 'minecraft:blaze_powder', 'kubejs:chile_powder')
+
+  event.remove({'output': 'culturaldelights:spicy_curry'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [{'item': 'kubejs:chile_paste_bottle'}, {'item': 'some_assembly_required:sliced_onion'}, {'item': 'farmersdelight:cooked_rice'}, {'item': 'kubejs:cut_potato'}, {'item': 'kubejs:cut_green_pepper'}],
+    'result': {'item': 'culturaldelights:spicy_curry'}
+  })
+  event.recipes.create.mixing('culturaldelights:spicy_curry', [{'fluid': 'kubejs:chile_paste', 'amount': 250}, {'item': 'some_assembly_required:sliced_onion'}, {'item': 'farmersdelight:cooked_rice'}, {'item': 'kubejs:cut_potato'}, {'item': 'kubejs:cut_green_pepper'}]).heated()
+
+  // Fix mushroom rice
+  event.remove({'id': 'sliceanddice:cooking/farmersdelight/cooking/mushroom_rice'})
+  event.remove({'id': 'farmersdelight:cooking/mushroom_rice'})
+
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'tag': 'forge:stew_vegetables'},
+      {'item': 'minecraft:brown_mushroom'},
+      {'item': 'minecraft:red_mushroom'},
+      {'item': 'farmersdelight:rice'},
+      waterBottle
+    ],
+    'result': {'item': 'farmersdelight:mushroom_rice'}
+  })
+
+  event.recipes.create.mixing('farmersdelight:mushroom_rice', [
+    {'tag': 'forge:stew_vegetables'},
+    {'item': 'minecraft:brown_mushroom'},
+    {'item': 'minecraft:red_mushroom'},
+    {'item': 'farmersdelight:rice'},
+    Fluid.of('minecraft:water', 250)
+  ]).heated()
+
+  // Fix fried rice
+  event.remove({'output': 'farmersdelight:fried_rice'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'item': 'culturaldelights:corn_kernels'},
+      {'item': 'farmersdelight:rice'},
+      {'tag': 'forge:eggs'},
+    ],
+    'result': {'item': 'farmersdelight:fried_rice'}
+  })
+
+  // Fix noodle soup
+  event.remove({'output': 'farmersdelight:noodle_soup'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'tag': 'forge:raw_pork'},
+      {'item': 'kubejs:cooked_pasta'},
+      {'tag': 'forge:cooked_eggs'},
+      {'item': 'minecraft:dried_kelp'},
+      {'item': 'culturaldelights:corn_kernels'},
+      waterBottle
+    ],
+    'result': {'item': 'farmersdelight:noodle_soup'}
+  })
+  event.recipes.create.mixing('farmersdelight:noodle_soup', [
+      {'tag': 'forge:raw_pork'},
+      {'item': 'kubejs:cooked_pasta'},
+      {'tag': 'forge:cooked_eggs'},
+      {'item': 'minecraft:dried_kelp'},
+      {'item': 'culturaldelights:corn_kernels'},
+      {'item': 'minecraft:bowl'},
+      Fluid.of('minecraft:water', 250)
+  ]).heated()
+
+  // Fix vegetable soup
+  event.remove({'output': 'farmersdelight:vegetable_soup'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'item': 'some_assembly_required:chopped_beetroot'},
+      {'tag': 'forge:cut_vegetables'},
+      waterBottle
+    ],
+    'result': {'item': 'farmersdelight:vegetable_soup'}
+  })
+  event.recipes.create.mixing('farmersdelight:vegetable_soup', [
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'item': 'some_assembly_required:chopped_beetroot'},
+      {'tag': 'forge:cut_vegetables'},
+      {'item': 'minecraft:bowl'},
+      Fluid.of('minecraft:water', 250)
+  ]).heated()
+
+  // Fix chicken soup
+  event.remove({'output': 'farmersdelight:chicken_soup'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'tag': 'forge:raw_chicken'},
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'tag': 'forge:stew_vegetables'},
+      {'tag': 'forge:cut_vegetables'},
+      waterBottle
+    ],
+    'result': {'item': 'farmersdelight:chicken_soup'}
+  })
+  event.recipes.create.mixing('farmersdelight:chicken_soup', [
+      {'tag': 'forge:raw_chicken'},
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'tag': 'forge:stew_vegetables'},
+      {'tag': 'forge:cut_vegetables'},
+      {'item': 'minecraft:bowl'},
+      Fluid.of('minecraft:water', 250)
+  ]).heated()
+
+  // Fix wild rice soup
+  event.remove({'output': 'collectorsreap:portobello_rice_soup'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'farmersdelight:rice'},
+      {'item': 'collectorsreap:baked_portobello_cap'},
+      {'item': 'minecraft:dried_kelp'},
+      waterBottle
+    ],
+    'result': {'item': 'collectorsreap:portobello_rice_soup'}
+  })
+  event.recipes.create.mixing('collectorsreap:portobello_rice_soup', [
+      {'item': 'some_assembly_required:chopped_carrot'},
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'farmersdelight:rice'},
+      {'item': 'collectorsreap:baked_portobello_cap'},
+      {'item': 'minecraft:dried_kelp'},
+      {'item': 'minecraft:bowl'},
+      Fluid.of('minecraft:water', 250)
+  ]).heated()
+
+  // Fix portobello risotto
+  event.remove({'output': 'collectorsreap:portobello_risotto'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'collectorsreap:baked_portobello_cap'},
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'farmersdelight:rice'},
+      {'tag': 'forge:milk/milk_bottle'}
+    ],
+    'result': {'item': 'collectorsreap:portobello_risotto'}
+  })
+  event.recipes.create.mixing('collectorsreap:portobello_risotto', [
+      {'item': 'collectorsreap:baked_portobello_cap'},
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'farmersdelight:rice'},
+      {'item': 'minecraft:bowl'},
+      {'fluidTag': 'forge:milk', 'amount' : 250}
+  ]).heated()
+
+  // Fix pasta with mushroom
+  event.remove({'output': 'collectorsreap:portobello_pasta'})
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [
+      {'item': 'collectorsreap:baked_portobello_cap'},
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'farmersdelight:raw_pasta'},
+      {'item': 'minecraft:brown_mushroom'},
+      {'tag': 'forge:milk/milk_bottle'},
+    ],
+    'result': {'item': 'collectorsreap:portobello_pasta'}
+  })
+  event.recipes.create.mixing('collectorsreap:portobello_pasta', [
+      {'item': 'collectorsreap:baked_portobello_cap'},
+      {'item': 'some_assembly_required:sliced_onion'},
+      {'item': 'farmersdelight:raw_pasta'},
+      {'item': 'minecraft:brown_mushroom'},
+      {'item': 'minecraft:bowl'},
+      {'fluidTag': 'forge:milk', 'amount' : 250}
+  ]).heated()
+
+   // Require heat to make tomato sauce
+  event.remove({'output': Fluid.of('create_central_kitchen:tomato_sauce', 250)})
+  event.remove({'input': 'farmersdelight:tomato', 'output': 'farmersdelight:tomato_sauce'})
+  event.recipes.create.mixing(Fluid.of('create_central_kitchen:tomato_sauce', 250), '2x farmersdelight:tomato').heated()
+
+
+  // Add liquids instead of bottles
+
   event.forEachRecipe({ type: 'farmersdelight:cooking' }, recipe => {
     let inputs = []
     let output = recipe.originalRecipeResult
@@ -319,11 +708,14 @@ ServerEvents.recipes(event => {
           liquid = true
           break
 
-        // Replace bowls of tomato sauce with liquid
+        // Replace bowls of tomato sauce with liquid.
         case 'farmersdelight:tomato_sauce':
           ingredient = {'fluid': 'create_central_kitchen:tomato_sauce', 'amount': 250}
           liquid = true
           break
+
+        // Replace water bottles with water.
+
       }
 
       inputs.push(ingredient)
@@ -351,10 +743,14 @@ ServerEvents.recipes(event => {
     let sandwich = recipe[3]
 
     // Allow shapeless versions of these
+    console.log('fix '+ id)
     event.remove({'output': id})
-    event.shapeless(id, ingredients)
+    event.shapeless(id, ingredients).id(id + '_shapeless_manual_only')
 
     // Most sandwiches and things need a piece of bread/etc. on top and bottom.
+
+    let baseIngredient = ingredients[0].replace(/^[0-9]x /, '')
+
     let top = ingredients[0]
     let bottom = ingredients[0]
 
@@ -403,26 +799,8 @@ ServerEvents.recipes(event => {
   }
 
   /***
-   * Misc cooking recipes.
-   **/
-
-  event.remove({'output': 'farmersdelight:roast_chicken'})
-  event.shapeless('kubejs:uncooked_roast_chicken', ['#forge:raw_chicken', 'some_assembly_required:sliced_onion', 'kubejs:cut_potato', 'some_assembly_required:chopped_carrot'])
-  event.smelting('farmersdelight:roast_chicken', 'kubejs:uncooked_roast_chicken')
-
-  event.recipes.create.filling('kubejs:uncooked_dumplings', [Fluid.of('kubejs:dumpling_filling', 500), '#forge:dough'])
-  event.remove({ 'output': 'farmersdelight:dumplings' }) // This doesn't remove the mixing recipe and I can't figure out why.
-  event.custom({
-    'type': 'farmersdelight:cooking',
-    'cookingtime': 200,
-    'experience': 1,
-    'ingredients': [{'item': 'kubejs:uncooked_dumplings'}],
-    'result': {item: 'farmersdelight:dumplings'}
-  })
-
-  /***
    * Salt
-   ***/
+   **/
 
   // The recipe for salt as water in a heated mixer is prone to conflicts, so we need another way to make salt.
   // Removing salt recipes until I think of a better way which has less conflicts.
@@ -432,23 +810,10 @@ ServerEvents.recipes(event => {
   event.remove({ 'mod': 'vegandelight', 'output': 'vegandelight:salt' })
 
   event.remove({ 'input': 'vegandelight:salt' })
-  event.recipes.create.compacting('vegandelight:tofu', [{'fluid': 'vegandelight:soymilk', 'amount': 1000}]).heated()
+  event.recipes.create.compacting('vegandelight:tofu', [Fluid.of('vegandelight:soymilk', 1000)]).heated()
 
   event.remove({ 'mod': 'vegandelight', 'output': 'vegandelight:silken_tofu' })
-  event.custom({
-    'type': 'create:mixing',
-    'heatRequirement': 'heated',
-    'ingredients': [{
-      'amount': 1000,
-      'fluid': 'minecraft:water'
-    },{
-      'amount': 1000,
-      'fluid': 'vegandelight:soymilk'
-    }],
-    'results': [
-        {'item': 'vegandelight:silken_tofu'}
-    ]
-  })
+  event.recipes.create.mixing('vegandelight:silken_tofu', [Fluid.of('minecraft:water', 250), 'vegandelight:tofu']).heated()
 
   /***
    * Extra Foods
@@ -457,17 +822,39 @@ ServerEvents.recipes(event => {
   event.recipes.create.milling('kubejs:corn_flour', 'culturaldelights:corn_kernels')
   event.recipes.create.milling('kubejs:corn_starch', 'kubejs:corn_flour')
 
+  event.remove({'output': 'minecraft:slime_ball'})
+
+  event.custom({
+    'type': 'farmersdelight:cooking',
+    'cookingtime': 200,
+    'experience': 1,
+    'ingredients': [{'item': 'kubejs:corn_starch'}, Item.of('minecraft:potion', '{Potion: "minecraft:water"}').strongNBT()],
+    'result': {'item': 'minecraft:slime_ball'}
+  })
+  event.recipes.create.mixing('minecraft:slime_ball', [
+    {'fluid': 'minecraft:water', amount:250},
+    'kubejs:corn_starch'
+  ]).heated()
+
   event.recipes.create.mixing({fluid: 'kubejs:sweet_cream', amount:1000}, [
-    {fluidTag: 'forge:milk', amount:1000},
+    {'fluidTag': 'forge:milk', amount:1000},
     'minecraft:sugar'
   ]).heated()
 
   event.shapeless('kubejs:berries_and_cream', ['#forge:milk', 'minecraft:sugar', '#forge:berries'])
   event.recipes.create.mixing('kubejs:berries_and_cream', [
-    {fluid: 'kubejs:sweet_cream', amount:1000},
+    {'fluid': 'kubejs:sweet_cream', amount:1000},
     '#forge:berries'
   ])
 
+  event.recipes.create.mixing('kubejs:guacamole', [
+    'culturaldelights:cut_avocado',
+    'some_assembly_required:sliced_onion',
+    'some_assembly_required:tomato_slices',
+    {'fluid': 'kubejs:lime_juice', 'amount': 100}
+  ])
+
+  event.shapeless('kubejs:chips_and_guacamole', ['culturaldelights:tortilla_chips', 'kubejs:guacamole'])
 
   for(let i = 0; i < global.foodFluids.length; i++) {
     let fluid = global.foodFluids[i]
@@ -479,12 +866,35 @@ ServerEvents.recipes(event => {
       }
     }
     else if(fluid.method == 'crushing') {
-      event.recipes.create.compacting({'fluid': 'kubejs:' + fluid.name, 'amount': 250}, fluid.ingredients)
+      let mix = event.recipes.create.compacting({'fluid': 'kubejs:' + fluid.name, 'amount': 250}, fluid.ingredients)
+      if(fluid.heated) {
+        mix.heated()
+      }
     }
 
     // Bottled version
-    event.recipes.create.filling('kubejs:' + fluid.name + '_bottle', [Fluid.of('kubejs:' + fluid.name, 250), 'minecraft:glass_bottle'])
+    let bottleResult = 'kubejs:' + fluid.name + '_bottle'
+    if(fluid.bottle) {
+      bottleResult = fluid.bottle
+      event.remove({'output': bottleResult})
+    }
+    event.recipes.create.filling(bottleResult, [Fluid.of('kubejs:' + fluid.name, 250), 'minecraft:glass_bottle'])
+    event.recipes.create.emptying([Fluid.of('kubejs:' + fluid.name, 250), 'minecraft:glass_bottle'], bottleResult)
   }
+
+  // Fix melons & melon juice.
+  event.remove([{'output': 'minecraft:melon_slice'}])
+  event.remove([{'output': Fluid.of('farmersrespite:melon_juice')}])
+  event.remove([{'output': 'farmersdelight:melon_juice'}])
+
+
+  event.recipes.create.compacting({'fluid': 'farmersrespite:melon_juice', 'amount': 250}, ['minecraft:melon_slice'])
+  event.recipes.create.filling('farmersdelight:melon_juice', [Fluid.of('farmersrespite:melon_juice', 250), 'minecraft:glass_bottle'])
+
+  // Seed oil - tiny bottles!
+  event.recipes.shapeless('8x kubejs:oil_bottle', ['createaddition:seed_oil_bucket', '8x minecraft:glass_bottle'])
+  event.recipes.create.filling('kubejs:oil_bottle', [Fluid.of('createaddition:seed_oil', 125), 'minecraft:glass_bottle'])
+  event.recipes.create.emptying([Fluid.of('createaddition:seed_oil', 125), 'minecraft:glass_bottle'], 'kubejs:oil_bottle')
 
   /***
    * Cake Recipes
@@ -625,13 +1035,14 @@ ServerEvents.recipes(event => {
     ['kubejs:blueberry_cheesecake', 'kubejs:blueberry_cheesecake_slice', 8],
 
     ['minecraft:apple', 'some_assembly_required:apple_slices', 4],
+    ['minecraft:melon', 'minecraft:melon_slice', 4],
     ['biomeswevegone:green_apple', 'kubejs:green_apple_slices', 4],
     ['farmersdelight:onion', 'some_assembly_required:sliced_onion', 4],
     ['minecraft:beetroot', 'some_assembly_required:chopped_beetroot', 4],
-    ['minecraft:carrot', 'some_assembly_required:chopped_carrot', 8],
-    ['minecraft:golden_carrot', 'some_assembly_required:chopped_golden_carrot', 8],
+    ['minecraft:carrot', 'some_assembly_required:chopped_carrot', 4],
+    ['minecraft:golden_carrot', 'some_assembly_required:chopped_golden_carrot', 4],
     ['farmersdelight:tomato', 'some_assembly_required:tomato_slices', 4],
-    ['culturaldelights:cucumber', 'culturaldelights:cut_cucumber', 8],
+    ['culturaldelights:cucumber', 'culturaldelights:cut_cucumber', 4],
     ['culturaldelights:pickle', 'culturaldelights:cut_pickle', 8],
     ['collectorsreap:lime', 'collectorsreap:lime_slice', 4],
 
@@ -663,6 +1074,21 @@ ServerEvents.recipes(event => {
       }
     })
     // event.recipes.create.cutting(Item.of(output, amount), input);
+
+    event.remove({'id': 'culturaldelights:cutting/cut_eggplant'})
+    event.custom({
+      'type': 'farmersdelight:cutting',
+      'ingredients': [
+        Item.of('culturaldelights:eggplant')
+      ],
+      'result': [
+        Item.of('culturaldelights:cut_eggplant', 2),
+        Item.of('culturaldelights:eggplant_seeds',2)
+      ],
+      'tool': {
+        'tag': 'forge:tools/knives'
+      }
+    })
   }
 
   /***
@@ -690,7 +1116,7 @@ ServerEvents.recipes(event => {
    * Neapolitan Recipes (and others)
    **/
 
-  // Some of these recipes are just silly. Fix them.
+  // TODO: Some of these recipes are just silly. Fix them.
 
   'neapolitan:strawberry_bean_bonbons'
   'neapolitan:vanilla_pudding'
@@ -699,6 +1125,15 @@ ServerEvents.recipes(event => {
   'neapolitan:vanilla_fudge'
   'neapolitan:strawberry_scones'
   'neapolitan:milk_bottle'
+  'collectorsreap:custard'
+  'collectorsreap:limeade'
+  'collectorsreap:mint_limeade'
+  'collectorsreap:berry_limeade'
+  'collectorsreap:pink_limeade'
+  'collectorsreap:pomegranate_smoothie'
+  'collectorsreap:lime_milkshake'
+  'collectorsreap:pomegranate_milkshake'
+  'collectorsreap:potato_fritters'
 
   event.remove({'output': 'neapolitan:neapolitan_ice_cream', 'type': 'minecraft:crafting_shapeless'})
   event.recipes.create.sequenced_assembly(
@@ -709,6 +1144,8 @@ ServerEvents.recipes(event => {
       event.recipes.createDeploying('kubejs:incomplete_neapolitan_ice_cream', ['kubejs:incomplete_neapolitan_ice_cream', 'neapolitan:strawberry_ice_cream']),
     ]
   ).transitionalItem('kubejs:incomplete_neapolitan_ice_cream').loops(1)
+
+  // Note: Ice cream recipes are handled in server_machines.js!
 
   event.remove({'output': 'neapolitan:chocolate_strawberries', 'type': 'minecraft:crafting_shapeless'})
   event.recipes.create.filling('neapolitan:chocolate_strawberries', [Fluid.of('create:chocolate', 250), 'neapolitan:strawberries'])
@@ -822,25 +1259,59 @@ ServerEvents.recipes(event => {
   }
 
   /***
+   * Confectionery Recipes
+   **/
+
+  // We don't have access to dragon's breath, so come up with an alternative
+  event.remove({'id': 'create_confectionery:ruby_chocolate_recipe'})
+
+  event.recipes.create.haunting('create_confectionery:bar_of_ruby_chocolate', 'create_confectionery:bar_of_black_chocolate')
+  event.recipes.create.haunting('create_confectionery:bar_of_ruby_chocolate', 'create_confectionery:bar_of_white_chocolate')
+
+  // Chocolate sampler boxes
+
+  for(let i = 0; i < global.chocolateSamplers.length; i++) {
+    let sampler = global.chocolateSamplers[i];
+    let incomplete = 'kubejs:incomplete_' + sampler.name
+    let steps = []
+
+    for(let j = 1; j < sampler.ingredients.length; j++) {
+      steps.push(event.recipes.createDeploying(incomplete, [incomplete, sampler.ingredients[j]]))
+    }
+    // Finally, build the sequence.
+    event.recipes.create.sequenced_assembly(
+      'kubejs:' + sampler.name,
+      sampler.ingredients[0], // The first ingredient in the list is the one we start with.
+      steps
+    ).transitionalItem(incomplete).loops(1)
+  }
+
+  /***
    * Fried Foods
    **/
   let friedFoods = [
     ['kubejs:sliced_potato', 'kubejs:fries'],
     ['kubejs:tortilla_pieces', 'culturaldelights:tortilla_chips'],
-  //  ['kubejs:fried_chicken'],
+    ['kubejs:breaded_chicken_cuts', 'kubejs:fried_chicken'],
+    ['kubejs:breaded_fish_slice', 'kubejs:fried_fish'],
+    ['kubejs:breaded_onion', 'kubejs:blooming_onion']
   ]
 
   // Frying requires a lot of oil, but returns most of it!
   function fryingRecipe(event, input, output) {
     event.remove({'output': output})
-    event.recipes.create.mixing([
-      input,
-      { 'fluid': 'createadditions:seed_oil', 'amount': 1000 }
-    ], [
-      output,
-      { 'fluid': 'createadditions:seed_oil', 'amount': 990 }
-    ]).heated()
 
+    event.custom({
+      'type': 'farmersdelight:cooking',
+      'cookingtime': 200,
+      'experience': 1,
+      'ingredients': [{'item': input}, {'item': 'kubejs:oil_bottle'}],
+      'result': {'item': output}
+    })
+  }
+
+  for(let i = 0; i < friedFoods.length; i++) {
+    fryingRecipe(event, friedFoods[i][0], friedFoods[i][1])
   }
 
   // Odds and ends
@@ -849,59 +1320,94 @@ ServerEvents.recipes(event => {
     'cookingtime': 200,
     'experience': 1,
     'ingredients': [{'item': 'kubejs:sliced_potato'}, {'item': 'kubejs:chile_powder'}],
-    'result': {item: 'kubejs:seasoned_potatoes', count: 1}
+    'result': {'item': 'kubejs:seasoned_potatoes'}
   })
 
+  event.shapeless('kubejs:breaded_chicken_cuts', ['#forge:cut_chicken', 'create:wheat_flour', 'kubejs:corn_starch', 'kubejs:chile_powder'])
+  event.shapeless('kubejs:breaded_fish_slice', ['#forge:cod_slices', 'create:wheat_flour', 'kubejs:corn_starch'])
+  event.shapeless('kubejs:breaded_onion', ['some_assembly_required:sliced_onion', 'create:wheat_flour', 'kubejs:corn_starch'])
+
+  // event.recipes.create.mixing('kubejs:breaded_chicken_cuts', [{'item': 'forge:cut_chicken'}, {'item': 'create:wheat_flour'}, {'item': 'kubejs:corn_starch'}, {'item': 'kubejs:chile_powder'}])
+  // event.recipes.create.mixing('kubejs:breaded_fish_slice', [{'item': 'forge:cod_slices'}, {'item': 'create:wheat_flour'}, {'item': 'kubejs:corn_starch'}])
+
+  event.shapeless('kubejs:chicken_tenders_meal', ['kubejs:fried_chicken', 'kubejs:fries'])
+  event.shapeless('kubejs:fish_and_chips', ['kubejs:fried_fish', 'kubejs:fries'])
+
   /***
-   * Fermenter Recipes
+   * Misc
    **/
 
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireItem(Item.of('culturaldelights:cucumber'))
-    .produceItem(Item.of('culturaldelights:pickle'))
+  // Functional storage shortcut from chest to drawer as this conflicts with the generic chest recipe.
+  event.remove({'id': 'functionalstorage:oak_drawer_alternate_x1'})
+  event.remove({'id': 'functionalstorage:oak_drawer_alternate_x2'})
+  event.remove({'id': 'functionalstorage:oak_drawer_alternate_x4'})
 
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireItem(Item.of('culturaldelights:cut_cucumber'))
-    .produceItem(Item.of('culturaldelights:cut_pickle'))
+  // Remove compressed crate recipes
+  const changeCrates = [
+    ['collectorsreap:lime_crate', 'collectorsreap:lime'],
+    ['collectorsreap:pomegranate_crate', 'collectorsreap:pomegranate'],
+    ['culturaldelights:avocado_crate', 'culturaldelights:avocado'],
+    ['culturaldelights:cucumber_crate', 'culturaldelights:cucumber'],
+    ['culturaldelights:pickle_crate', 'culturaldelights:pickle'],
+    ['culturaldelights:corn_cob_crate', 'culturaldelights:corn_cob'],
+    ['culturaldelights:eggplant_crate', 'culturaldelights:eggplant'],
+    ['culturaldelights:white_eggplant_crate', 'culturaldelights:white_eggplant'],
+    ['farmersdelight:carrot_crate', 'minecraft:carrot'],
+    ['farmersdelight:potato_crate', 'minecraft:potato'],
+    ['farmersdelight:beetroot_crate', 'minecraft:beetroot'],
+    ['farmersdelight:cabbage_crate', 'farmersdelight:cabbage'],
+    ['farmersdelight:tomato_crate', 'farmersdelight:tomato'],
+    ['farmersdelight:onion_crate', 'farmersdelight:onion'],
+    ['neapolitan:banana_crate', 'neapolitan:banana'],
+    ['neapolitan:adzuki_crate', 'neapolitan:adzuki_beans'],
+    ['neapolitan:roasted_adzuki_crate', 'neapolitan:roasted_adzuki_beans'],
+    ['quark:golden_apple_crate', 'minecraft:golden_apple'],
+    ['quark:apple_crate', 'minecraft:apple'],
+    ['quark:golden_carrot_crate', 'minecraft:golden_carrot'],
+  ]
 
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireItem(Item.of('farmersdelight:cabbage_leaf'))
-    .produceItem(Item.of('kubejs:sauerkraut'))
-
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireItem(Item.of('vegandelight:soybean'))
-    .produceItem(Item.of('kubejs:natto'))
-
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireItem(Item.of('minecraft:apple'))
-    .requireFluid(Fluid.of('minecraft:water', 1000))
-    .produceFluid(Fluid.of('kubejs:apple_cider_vinegar', 1000))
-
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireItem(Item.of('vegandelight:soybean'))
-    .requireFluid(Fluid.of('minecraft:water', 1000))
-    .produceFluid(Fluid.of('kubejs:soy_sauce', 1000))
-
-  event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-    .requireFluid(Fluid.of('farmersrespite:black_tea', 1000))
-    .produceFluid(Fluid.of('kubejs:kombucha', 1000))
-
-  // This is overriden if alcohol is turned on.
-  if(!global.showDrinks) {
-    global.ricevinegar_recipe = event.recipes.custommachinery.custom_machine('custommachinery:fermenter', global.standard_pickling_time)
-      .requireItem(Item.of('farmersdelight:rice'))
-      .requireFluid(Fluid.of('minecraft:water', 1000))
-      .produceFluid(Fluid.of('kubejs:rice_vinegar', 1000))
+  for(let i = 0; i < changeCrates.length; i++) {
+    let output = changeCrates[i][0]
+    let input = changeCrates[i][1]
+    let name = output.replace(':', '_') + '_manual_only'
+    event.remove({'output': output})
+    event.shapeless(output, ['9x ' + input]).id(name)
   }
 
-  /***
-   * Ice Machine Recipes
-   **/
+  // Remove duplicate crates
+  const removeCrates = [
+    'quark:potato_crate',
+    'quark:carrot_crate',
+    'quark:beetroot_crate',
+    'quarkdelight:ancient_fruit_crate',
+  ]
 
-  global.standard_freezing_time = 1000
+  for(let i = 0; i < removeCrates.length; i++) {
+    event.remove({'output': removeCrates[i]})
+  }
 
-  event.recipes.custommachinery.custom_machine('custommachinery:ice_machine', global.standard_freezing_time)
-    .requireFluid(Fluid.of('minecraft:water', 1000))
-    .produceItem(Item.of('minecraft:ice'))
+  // event.remove({'id': 'quark:building/crafting/compressed/potato_crate'})
+  // event.remove({'id': 'quark:building/crafting/compressed/potato_crate'})
+  // event.remove({'id': 'quark:building/crafting/compressed/potato_crate'})
+  // event.remove({'id': 'quark:building/crafting/compressed/potato_crate'})
+
+
+  event.replaceInput({'output': 'create:large_water_wheel'}, 'minecraft:oak_planks', 'minecraft:iron_ingot')
+
+  event.remove({'output': 'create:water_wheel'})
+  event.shaped(
+    Item.of('create:water_wheel'),
+    [
+      'ABA',
+      'BCB',
+      'ABA'
+    ],
+    {
+      'A': 'create:andesite_alloy',
+      'B': '#minecraft:planks',
+      'C': 'create:large_cogwheel'
+    }
+  )
+
 
 })

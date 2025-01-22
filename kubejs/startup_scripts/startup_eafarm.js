@@ -37,6 +37,7 @@ function createBottledFluid(event, conf) {
 
   let bottle = event.create(conf.name + '_bottle')
     .displayName(conf.title)
+    .containerItem('minecraft:glass_bottle')
     .food(food => {
       food
         .hunger(hunger)
@@ -95,7 +96,11 @@ function getNameFromItem(id) {
   // let text = item.getDisplayName().getString()
   // return text.substring(1, text.length()-1)
 
-  return titleCase(id.split(':')[1]);
+  let itemName = id
+  if(itemName.indexOf(':') !== -1) {
+    itemName = itemName.split(':')[1]
+  }
+  return titleCase(itemName)
 }
 
 function createIncompleteItem(event, item, texture) {
@@ -105,9 +110,13 @@ function createIncompleteItem(event, item, texture) {
     texture = 'kubejs:item/incomplete_meal'
   }
 
-  let id = 'incomplete_' + item.split(':')[1]
-console.log('Creating Incomplete Item: ' + id)
-  event.create(id)
+  let itemName = item
+  if(itemName.indexOf(':') !== -1) {
+    itemName = itemName.split(':')[1]
+  }
+
+  let id = 'incomplete_' + itemName
+  event.create(id, 'create:sequenced_assembly')
     .displayName(name)
     .texture(texture)
 }
@@ -128,6 +137,8 @@ StartupEvents.registry('item', event => {
   // Inedible ingredients
   event.create('corn_flour').displayName('Corn Flour').texture('create:item/wheat_flour')
   event.create('corn_starch').displayName('Corn Starch').texture('create:item/wheat_flour')
+  event.create('raw_tortilla').displayName('Raw Tortilla').tooltip('You need to cook this before you can eat it.')
+  event.create('dough_sheet').displayName('Dough Sheet').tooltip('This can be used to make pasta.')
 
   event.create('cut_potato').displayName('Cut Potatoes').tooltip('Potatoes that have been cut once.')
   event.create('sliced_potato').displayName('Sliced Potatoes').tooltip('Potatoes that have been cut twice.')
@@ -136,12 +147,27 @@ StartupEvents.registry('item', event => {
   event.create('strawberry_cheesecake').displayName('Strawberry Cheesecake')
   event.create('blueberry_cheesecake').displayName('Blueberry Cheesecake')
 
+  event.create('oil_bottle').displayName('Seed Oil Bottle').tooltip('You can use this for cooking.').texture('kubejs:item/yellow_bottle')
+
+  event.create('uncooked_roast_chicken').displayName('Uncooked Roast Chicken').tooltip('You need to cook this before you can eat it.').texture('farmersdelight:item/roast_chicken')
+  event.create('uncooked_dumplings').displayName('Uncooked Dumpling').tooltip('You need to cook this before you can eat it.').texture('farmersdelight:item/dumplings')
+
+  event.create('breaded_fish_slice').displayName('Breaded Fish').tooltip('You need to fry this before you can eat it.')
+  event.create('breaded_chicken_cuts').displayName('Breaded Chicken').tooltip('You need to fry this before you can eat it.')
+  event.create('breaded_onion').displayName('Breaded Onion').tooltip('You need to fry this before you can eat it.')
+
+  event.create('uncooked_black_bean_patty').displayName('Uncooked Black Bean Patty').tooltip('You need to cook this before you can eat it.')
+  event.create('uncooked_burger_bun').displayName('Uncooked Burger Bun').tooltip('You need to cook this before you can use it.')
+  event.create('guacamole').displayName('Guacamole')
+
   // New custom foods
   createFoodShort(event, 'berries_and_cream', 'Berries and Cream', 'Fluxo\'s favorite dish!')
   createFoodShort(event, 'sauerkraut', 'Sauerkraut', 'Fermented cabbage.')
   createFoodShort(event, 'natto', 'Natto', 'Fermented soybeans.')
   createFoodShort(event, 'sushi_rice', 'Sushi Rice', 'Rice mixed with vinegar for making sushi.').texture('farmersdelight:item/rice')
   createFoodShort(event, 'fries', 'Fries', 'Fried sliced potatoes.')
+  createFoodShort(event, 'mashed_potatoes', 'Mashed Potatoes', '').containerItem('minecraft:bowl')
+  createFoodShort(event, 'cooked_pasta', 'Cooked Pasta', '').texture('farmersdelight:item/raw_pasta')
 
   createFoodShort(event, 'green_apple_slices', 'Green Apples Slices', 'Slices of a green apple.')
   createFoodShort(event, 'cheesecake_slice', 'Plain Cheesecake Slice', 'Slice of a plain cheesecake.')
@@ -153,15 +179,32 @@ StartupEvents.registry('item', event => {
   createFoodShort(event, 'bean_burrito', 'Bean Burrito', 'A burrito filled with beans', 5, 4).texture('culturaldelights:item/beef_burrito')
   createFoodShort(event, 'breakfast_burrito', 'Breakfast Burrito', 'A burrito filled with eggs, beans, and peppers', 7, 5).texture('culturaldelights:item/beef_burrito')
   createFoodShort(event, 'seasoned_potatoes', 'Seasoned Potatoes', '', 3)
-  createFoodShort(event, 'tortilla_pieces', 'Tortilla Pieces', 'Cut up pieces of a tortilla. Fry these to make chips!').texture('culturaldelights:chips')
+  createFoodShort(event, 'tortilla_pieces', 'Tortilla Pieces', 'Cut up pieces of a tortilla. Fry these to make chips!').texture('culturaldelights:item/tortilla_chips')
+  createFoodShort(event, 'chips_and_salsa', 'Chips and Salsa', '', 6, 4)
+  createFoodShort(event, 'chips_and_guacamole', 'Chips and Guacamole', '', 6, 4)
+  createFoodShort(event, 'nachos', 'Nachos', '', 8, 6)
 
-  event.create('uncooked_roast_chicken').displayName('Uncooked Roast Chicken').tooltip('You need to cook this before you can eat it.').texture('farmersdelight:item/roast_chicken')
-  event.create('uncooked_dumplings').displayName('Uncooked Dumpling').tooltip('You need to cook this before you can eat it.').texture('farmersdelight:item/dumplings')
+  createFoodShort(event, 'fried_chicken', 'Fried Chicken', 'Chicken that has been breaded and fried.', 6, 4)
+  createFoodShort(event, 'fried_fish', 'Fried Fish', 'Fish that has been breaded and fried.', 6, 4)
+
+  createFoodShort(event, 'chicken_tenders_meal', 'Chicken Tenders Meal', 'Chicken tendies and fries.', 8, 6)
+  createFoodShort(event, 'fish_and_chips', 'Fish and Chips', 'Fried fish and fries.', 8, 6)
+  createFoodShort(event, 'blooming_onion', 'Blooming Onion').texture('biomeswevegone:item/blooming_oddion')
+
+  createFoodShort(event, 'black_bean_patty', 'Black Bean Patty', '', 6, 4).texture('farmersdelight:item/beef_patty')
+  createFoodShort(event, 'black_bean_burger', 'Black Bean Burger', '', 8, 6).texture('farmersdelight:item/hamburger')
+  createFoodShort(event, 'black_bean_soup', 'Black Bean Soup', '', 6, 4)
+
+  createFoodShort(event, 'pink_pony_club', 'Pink Pony Club Sandwich', 'A delicious, multi-tiered vegan sandwich.', 12, 8).texture('farmersdelight:item/bacon_sandwich')
+
+  createIncompleteItem(event, 'neapolitan:neapolitan_ice_cream', 'neapolitan:item/vanilla_ice_cream')
 })
 
 /***
  * Juices & Jams
  **/
+
+// These get initialized in startup_last.js
 
 global.foodFluids = [
   {'name': 'rice_vinegar', 'title': 'Rice Vinegar', 'ingredients': [], 'color': 0xffffee, 'texture': 'thin'},
@@ -176,7 +219,7 @@ global.foodFluids = [
   {'name': 'sweet_berry_juice', 'title': 'Sweet Berry Juice', 'ingredients': ['4x minecraft:sweet_berries'], 'color': 0xff0000, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/red_bottle'},
   {'name': 'strawberry_juice', 'title': 'Strawberry Juice', 'ingredients': ['4x neapolitan:strawberries'], 'color': 0xff0000, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/red_bottle'},
   {'name': 'blueberry_juice', 'title': 'Blueberry Juice', 'ingredients': ['4x biomeswevegone:blueberries'], 'color': 0x0000ff, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/blue_bottle'},
-  {'name': 'pumpkin_juice', 'title': 'Pumpkin Juice', 'ingredients': ['minecraft:pumpkin'], 'color': 0xff9900, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/orange_bottle'},
+  {'name': 'pumpkin_juice', 'title': 'Pumpkin Juice', 'ingredients': ['2x farmersdelight:pumpkin_slice'], 'color': 0xff9900, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/orange_bottle'},
   {'name': 'tomato_juice', 'title': 'Tomato Juice', 'ingredients': ['2x farmersdelight:tomato'], 'color': 0xff0000, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/red_bottle'},
   {'name': 'pomegranate_juice', 'title': 'Pomegranate Juice', 'ingredients': ['8x collectorsreap:pomegranate_seeds'], 'color': 0xff0000, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/red_bottle'},
   {'name': 'beet_juice', 'title': 'Beet Juice', 'ingredients': ['4x minecraft:beetroot'], 'color': 0xff0000, 'texture': 'thin', 'method': 'crushing', 'bottled': 'kubejs:item/red_bottle'},
@@ -196,22 +239,35 @@ global.foodFluids = [
   {'name': 'cheesecake_mix', 'title': 'Cheesecake Mix', 'ingredients': ['minecraft:sugar', '#forge:eggs', {'fluid': 'kubejs:sweet_cream', 'amount': 250}], 'color': 0xfffff0, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/white_jar'},
 
   {'name': 'portobello_quiche_filling', 'title': 'Portobello Quiche Filling', 'ingredients': ['2x collectorsreap:portobello', '2x some_assembly_required:sliced_onion', '#forge:eggs'], 'color': 0xffffc0, 'texture': 'thick', 'method': 'mixing', 'heated': true, 'bottled': 'kubejs:item/white_jar'},
-  {'name': 'shepherds_pie_filling', 'title': 'Shepherd\'s Pie Filling', 'ingredients': ['2x minecraft:baked_potato', '2x some_assembly_required:sliced_onion', '#forge:cooked_mutton'], 'color': 0xffffc0, 'texture': 'thick', 'method': 'mixing', 'heated': true, 'bottled': 'kubejs:item/white_jar'},
-  {'name': 'dumpling_filling', 'title': 'Dumpling Filling', 'ingredients': ['#forge:raw_beef', 'some_assembly_required:sliced_onion', 'farmersdelight:cabbage_leaf'], 'color': 0xffffc0, 'texture': 'thick', 'method': 'mixing', 'heated': true, 'bottled': 'kubejs:item/white_jar'},
-  // Mashed potatoes
+  {'name': 'shepherds_pie_filling', 'title': 'Shepherd\'s Pie Filling', 'ingredients': [{'fluid': 'kubejs:mashed_potatoes', 'amount': 125}, '2x some_assembly_required:sliced_onion', '2x some_assembly_required:chopped_carrot', '#forge:cooked_mutton'], 'color': 0xffffc0, 'texture': 'thick', 'method': 'mixing', 'heated': true, 'bottled': 'kubejs:item/brown_jar'},
+  {'name': 'dumpling_filling', 'title': 'Dumpling Filling', 'ingredients': ['#forge:raw_beef', 'some_assembly_required:sliced_onion', 'farmersdelight:cabbage_leaf', {'fluid': 'kubejs:soy_sauce', 'amount': 250}], 'color': 0xffffc0, 'texture': 'thick', 'method': 'mixing', 'heated': true, 'bottled': 'kubejs:item/white_jar'},
+  {'name': 'mashed_potatoes', 'title': 'Mashed Potatoes', 'ingredients': ['minecraft:potato'], 'color': 0xffffee, 'texture': 'thick', 'method': 'crushing', 'heated': true, 'bottled': 'kubejs:item/white_jar'},
+
+  {'name': 'vanilla_ice_cream', 'title': 'Vanilla Ice Cream Mix', 'ingredients': ['minecraft:sugar', 'neapolitan:dried_vanilla_pods', {'fluidTag': 'forge:milk', 'amount': 250}], 'color': 0xffffd0, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/white_jar'},
+  {'name': 'chocolate_ice_cream', 'title': 'Chocolate Ice Cream Mix', 'ingredients': ['minecraft:sugar', {'fluid': 'create:chocolate', 'amount': 125}, {'fluidTag': 'forge:milk', 'amount': 125}], 'color': 0x996633, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/brown_jar'},
+  {'name': 'strawberry_ice_cream', 'title': 'Strawberry Ice Cream Mix', 'ingredients': ['minecraft:sugar', 'neapolitan:strawberries', {'fluidTag': 'forge:milk', 'amount': 250}], 'color': 0xff9999, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/red_jar'},
+  {'name': 'banana_ice_cream', 'title': 'Banana Ice Cream Mix', 'ingredients': ['minecraft:sugar', 'neapolitan:banana', {'fluidTag': 'forge:milk', 'amount': 250}], 'color': 0xffff99, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/yellow_jar'},
+  {'name': 'mint_ice_cream', 'title': 'Mint Ice Cream Mix', 'ingredients': ['minecraft:sugar', 'neapolitan:mint_leaves', {'fluidTag': 'forge:milk', 'amount': 250}], 'color': 0x99ff99, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/green_jar'},
+  {'name': 'adzuki_ice_cream', 'title': 'Adzuki Ice Cream Mix', 'ingredients': ['minecraft:sugar', 'neapolitan:roasted_adzuki_beans', {'fluidTag': 'forge:milk', 'amount': 250}], 'color': 0xff6666, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/red_jar'},
+  {'name': 'lime_ice_cream', 'title': 'Lime Ice Cream Mix', 'ingredients': ['minecraft:sugar', {'fluid': 'kubejs:lime_juice', 'amount': 125}, {'fluidTag': 'forge:milk', 'amount': 125}], 'color': 0x99ff99, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/green_jar'},
+  {'name': 'pomegranate_ice_cream', 'title': 'Pomegranate Ice Cream Mix', 'ingredients': ['4x collectorsreap:pomegranate_seeds', 'neapolitan:roasted_adzuki_beans', {'fluidTag': 'forge:milk', 'amount': 250}], 'color': 0xff6666, 'texture': 'thick', 'method': 'mixing', 'bottled': 'kubejs:item/red_jar'},
+
+  {'name': 'strawberry_banana_smoothie', 'title': 'Strawberry Banana Smoothie', 'ingredients': ['2x neapolitan:strawberries', 'neapolitan:banana'], 'color': 0xff9999, 'texture': 'thick', 'method': 'mixing', 'bottle': 'neapolitan:strawberry_banana_smoothie'},
+  {'name': 'pomegranate_smoothie', 'title': 'Pomegranate Smoothie', 'ingredients': ['4x collectorsreap:pomegranate_seeds', 'neapolitan:banana'], 'color': 0xff9999, 'texture': 'thick', 'method': 'mixing', 'bottle': 'collectorsreap:pomegranate_smoothie'},
 ]
 
-StartupEvents.registry('fluid', event => {
-  for(let i = 0; i < global.foodFluids.length; i++) {
-    let conf = global.foodFluids[i];
-    createFluid(event, conf);
-  }
-})
+global.chocolateSamplers = [
+  {'name': 'chocolate_sampler_1', 'title': 'Mini Chocolate Sampler 1', 'ingredients': ['minecraft:paper', 'create_confectionery:bar_of_black_chocolate', 'create_confectionery:ruby_chocolate_candy', 'create_confectionery:black_chocolate_candy_1', 'create_confectionery:white_chocolate_candy_2', 'create_confectionery:chocolate_candy_3', 'create_confectionery:ruby_chocolate_glazed_marshmallow', 'neapolitan:chocolate_strawberries']},
+  {'name': 'chocolate_sampler_2', 'title': 'Mini Chocolate Sampler 2', 'ingredients': ['minecraft:paper', 'create_confectionery:bar_of_white_chocolate', 'create_confectionery:chocolate_candy', 'create_confectionery:white_chocolate_candy_1', 'create_confectionery:ruby_chocolate_candy_2', 'create_confectionery:black_chocolate_candy_3', 'create_confectionery:chocolate_glazed_marshmallow', 'neapolitan:vanilla_chocolate_fingers']},
+  {'name': 'chocolate_sampler_3', 'title': 'Mini Chocolate Sampler 3', 'ingredients': ['minecraft:paper', 'create_confectionery:bar_of_ruby_chocolate',  'create_confectionery:black_chocolate_candy', 'create_confectionery:ruby_chocolate_candy_1', 'create_confectionery:chocolate_candy_2', 'create_confectionery:white_chocolate_candy_3', 'create_confectionery:black_chocolate_glazed_marshmallow', 'neapolitan:mint_chocolate']},
+  {'name': 'chocolate_sampler_4', 'title': 'Mini Chocolate Sampler 4', 'ingredients': ['minecraft:paper', 'create:bar_of_chocolate',                     'create_confectionery:white_chocolate_candy', 'create_confectionery:chocolate_candy_1', 'create_confectionery:black_chocolate_candy_2', 'create_confectionery:ruby_chocolate_candy_3', 'create_confectionery:white_chocolate_glazed_marshmallow', 'create:chocolate_glazed_berries']},
+  {'name': 'large_chocolate_sampler', 'title': 'Large Chocolate Sampler', 'ingredients': ['minecraft:paper', 'kubejs:chocolate_sampler_1', 'kubejs:chocolate_sampler_2', 'kubejs:chocolate_sampler_3', 'kubejs:chocolate_sampler_4']},
+]
 
 StartupEvents.registry('item', event => {
-  for(let i = 0; i < global.foodFluids.length; i++) {
-    let conf = global.foodFluids[i];
-    createBottledFluid(event, conf);
+  for(let i = 0; i < global.chocolateSamplers.length; i++) {
+    let sampler = global.chocolateSamplers[i];
+    createFoodShort(event, sampler.name, sampler.title, '')
+    createIncompleteItem(event, 'kubejs:' + sampler.name, 'kubejs:item/incomplete_sampler')
   }
 })
-
